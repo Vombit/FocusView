@@ -1,0 +1,29 @@
+/* left area widget */
+
+/* /left area widget */
+
+/* main area widget */
+.ruler_widget {{
+    background-color: rgba(0, 0, 0, 180);
+}}
+
+.zoom_label {{
+    color: rgba(255, 255, 255, 180);
+    border-radius: 12px;
+    font-size: 24px;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+}}
+
+.btn_zoom {{
+    border-radius: 12px;
+    font-size: 24px;
+    font-weight: bold;
+}}
+.btn_zoom:hover {{
+    background-color: rgba(50, 50, 50, 180);
+}}
+.btn_zoom:pressed {{
+    background-color: rgba(100, 100, 100, 200);
+}}
+/* /main area widget */
