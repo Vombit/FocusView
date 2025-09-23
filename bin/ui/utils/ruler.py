@@ -7,13 +7,13 @@ from PyQt6.QtGui import QPainter, QPen, QBrush, QColor
 class RulerCanvas(QWidget):
     """Custom ruler canvas"""
 
-    def __init__(self, parent, screen_dpi, zoom_level):
+    def __init__(self, parent: QWidget, cm_in_pixels: float, zoom_level: float):
         super().__init__(parent)
-        self.screen_dpi = screen_dpi
-        self.zoom_level = zoom_level
+        self.cm_in_pixels: float = cm_in_pixels
+        self.zoom_level: float = zoom_level
         self.setMinimumHeight(50)
 
-    def update_zoom(self, zoom_level):
+    def update_zoom(self, zoom_level: float) -> None:
         """Update scale according to zoom level"""
         self.zoom_level = zoom_level
         self.update()
@@ -27,16 +27,14 @@ class RulerCanvas(QWidget):
         width = self.width()
         height = self.height()
 
-        start_ruler_x = 20
-        end_ruler_x = width - 20
+        start_ruler_x_pos = 20
+        end_ruler_x_pos = width - 20
 
         # Color
         painter.setPen(QPen(QColor(255, 255, 255), 2))
         painter.setBrush(QBrush(QColor(255, 255, 255)))
 
-        # will need to move it to a higher level in the main window in order to reuse it.
-        cm_in_pixels = self.screen_dpi / 2.54  # DPI to pixels per cm
-        zoomed_cm_pixels = cm_in_pixels * self.zoom_level
+        zoomed_cm_pixels = self.cm_in_pixels * self.zoom_level
 
         # Determining the appropriate interval for the labels
         if zoomed_cm_pixels > 100:
@@ -52,10 +50,11 @@ class RulerCanvas(QWidget):
             unit_multiplier *= 5
 
         # Drawing the main line
-        painter.drawLine(start_ruler_x, height - 20, end_ruler_x, height - 20)
+        painter.drawLine(start_ruler_x_pos, height - 20,
+                         end_ruler_x_pos, height - 20)
 
         # Divisions and signatures
-        x_pos = start_ruler_x
+        x_pos = start_ruler_x_pos
         mark_count = 0
 
         font = painter.font()
@@ -78,7 +77,7 @@ class RulerCanvas(QWidget):
             step_value_cm = 0.1
             unit_display = "mm"
 
-        while x_pos < end_ruler_x:
+        while x_pos < end_ruler_x_pos:
             painter.drawLine(int(x_pos), height - 30, int(x_pos), height - 10)
 
             total_cm = mark_count * step_value_cm
@@ -100,7 +99,7 @@ class RulerCanvas(QWidget):
             if step_pixels > 20:  # Only if there is enough space
                 for i in range(1, 6):
                     small_x = x_pos + (step_pixels * i / 6)
-                    if small_x < end_ruler_x:
+                    if small_x < end_ruler_x_pos:
                         painter.drawLine(int(small_x), height -
                                          22, int(small_x), height - 18)
 

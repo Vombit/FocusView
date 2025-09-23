@@ -24,14 +24,22 @@ logger = setup_logger(__name__)
 
 class MainArea(QWidget):
     """pass"""
+    ZOOM_LEVEL_MAX = 20.0
+    ZOOM_LEVEL_MIN = 1.0
     ZOOM_LEVEL_DEFAULT = 10
+    ZOOM_STEP = 1.0
     COEFFICIENT_ZOOM_OPTICAL = 15.5
+    INCH_IN_CM = 2.54
 
     def __init__(self):
         super().__init__()
+
         screen = QApplication.primaryScreen()
         self.screen_dpi = screen.physicalDotsPerInch()
+        self.cm_in_pixels = self.screen_dpi / self.INCH_IN_CM
+
         self.zoom_level = self.ZOOM_LEVEL_DEFAULT
+        self.svg_w = self.svg_h = 0.0
 
         self.camera_thread = None
 
@@ -77,7 +85,7 @@ class MainArea(QWidget):
         self.ruler_widget.setProperty('class', 'ruler_widget')
 
         self.ruler_canvas = RulerCanvas(
-            self.ruler_widget, self.screen_dpi, self.zoom_level)
+            self.ruler_widget, self.cm_in_pixels, self.zoom_level)
 
         ruler_layout = QVBoxLayout(self.ruler_widget)
         ruler_layout.setContentsMargins(5, 5, 5, 5)
@@ -107,7 +115,7 @@ class MainArea(QWidget):
         self.ruler_widget.setGeometry(
             ruler_x, ruler_y, ruler_width, ruler_height)
 
-        self.svg_size()
+        self.svg_size(self.svg_w, self.svg_h)
 
     def resizeEvent(self, event):  # type: ignore
         """Updates the positions of the elements when window size changes"""
@@ -128,14 +136,14 @@ class MainArea(QWidget):
 
     def zoom_in(self):
         """Increases the zoom"""
-        if self.zoom_level < 20.0:
-            self.zoom_level += 1.0
+        if self.zoom_level < self.ZOOM_LEVEL_MAX:
+            self.zoom_level += self.ZOOM_STEP
             self.update_zoom_display()
 
     def zoom_out(self):
         """Reduces the zoom"""
-        if self.zoom_level > 1.0:
-            self.zoom_level -= 1.0
+        if self.zoom_level > self.ZOOM_LEVEL_MIN:
+            self.zoom_level -= self.ZOOM_STEP
             self.update_zoom_display()
 
     def update_zoom_display(self):
@@ -146,7 +154,7 @@ class MainArea(QWidget):
         if hasattr(self, 'ruler_canvas'):
             self.ruler_canvas.update_zoom(self.zoom_level)
 
-        self.svg_size()
+        self.svg_size(self.svg_w, self.svg_h)
 
     def update_image(self, img):
         """pass"""
@@ -195,19 +203,17 @@ class MainArea(QWidget):
 
         parts = name.split("-")
 
-        w = h = 0.0
         for part in parts:
             if part.startswith("w"):
-                w = float(part[1:].replace(",", "."))
+                self.svg_w = float(part[1:].replace(",", "."))
             elif part.startswith("h"):
-                h = float(part[1:].replace(",", "."))
+                self.svg_h = float(part[1:].replace(",", "."))
 
-        self.svg_size(w, h)
+        self.svg_size(self.svg_w, self.svg_h)
 
-    def svg_size(self, width: float = 5.6, height: float = 9.0):
+    def svg_size(self, width: float, height: float):
         """in mm"""
-        cm_in_pixels = self.screen_dpi / 2.54
-        zoomed_cm_pixels = cm_in_pixels * self.zoom_level
+        zoomed_cm_pixels = self.cm_in_pixels * self.zoom_level
         svg_w = int(zoomed_cm_pixels * width / 10 * 1.05)
         svg_h = int(zoomed_cm_pixels * height / 10 * 1.05)
         self.svg_widget.setFixedSize(svg_w, svg_h)

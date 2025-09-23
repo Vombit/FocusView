@@ -9,3 +9,7 @@ wheels/
 # Virtual environments
 .venv
 .vscode
+
+# source
+/bin/resources/blueprints/*
+Focus View.exe

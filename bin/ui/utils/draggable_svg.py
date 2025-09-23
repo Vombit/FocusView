@@ -1,5 +1,6 @@
 # pylint: disable=no-name-in-module
 """pass"""
+from PyQt6.QtWidgets import QWidget
 from PyQt6.QtSvgWidgets import QSvgWidget
 from PyQt6.QtCore import Qt, QPoint, QPointF
 from PyQt6.QtGui import QMouseEvent
@@ -8,7 +9,7 @@ from PyQt6.QtGui import QMouseEvent
 class DraggableSvgWidget(QSvgWidget):
     """pass"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.dragging = False
         self.drag_start_position = QPoint()
@@ -29,7 +30,7 @@ class DraggableSvgWidget(QSvgWidget):
 
             # Limiting movement to the borders of the parent widget
             if self.parent():
-                parent_rect = self.parent().rect()
+                parent_rect = self.parent().rect()  # type: ignore
                 widget_rect = self.rect()
 
                 # Проверяем границы

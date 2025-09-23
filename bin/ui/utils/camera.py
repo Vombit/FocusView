@@ -19,11 +19,11 @@ class CameraThread(QThread):
         self._set_size(4000, 3000)
         self.set_exposure(30)
 
-    def _set_size(self, width: int, height: int):
+    def _set_size(self, width: int, height: int) -> None:
         """pass"""
         self._camera.set_size(width, height)
 
-    def set_exposure(self, exposure_ms: int):
+    def set_exposure(self, exposure_ms: int) -> None:
         """pass"""
         self._camera.set_camera_exposure(exposure_ms)
 
