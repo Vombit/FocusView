@@ -11,12 +11,14 @@ class CameraThread(QThread):
     """Thread camera handling"""
     frame_ready = pyqtSignal(np.ndarray)
 
+    CAMERA_SIZE_DEFAULT = (4000, 3000)
+
     def __init__(self, camera_id: int = 0):
         super().__init__()
         self._camera = CameraMVSDK(camera_id)
         self._run_flag = True
 
-        self._set_size(4000, 3000)
+        self._set_size(*self.CAMERA_SIZE_DEFAULT)
         self.set_exposure(30)
 
     def _set_size(self, width: int, height: int) -> None:
@@ -33,6 +35,8 @@ class CameraThread(QThread):
         try:
             while self._run_flag:
                 frame = self._camera.get_frame()
+                if frame is None:
+                    continue
                 if frame.shape[2] == 1:  # if mono camera
                     frame_rgb = np.repeat(frame, 3, axis=2)  # → (H, W, 3)
                 else:

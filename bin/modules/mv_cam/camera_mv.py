@@ -30,6 +30,8 @@ class CameraMVSDK:
         self.max_height = self.cap.sResolutionRange.iHeightMax
 
         self.mono_camera = self.cap.sIspCapacity.bMonoSensor != 0
+        self.channels = 1 if self.mono_camera else 3
+
         if self.mono_camera:
             mvsdk.CameraSetIspOutFormat(
                 self.hCamera, mvsdk.CAMERA_MEDIA_TYPE_MONO8)
@@ -48,9 +50,11 @@ class CameraMVSDK:
         mvsdk.CameraPlay(self.hCamera)
 
         frame_buffer_size = self.max_width * \
-            self.max_height * (1 if self.mono_camera else 3)
+            self.max_height * self.channels
         # image storage buffer
         self.pFrameBuffer = mvsdk.CameraAlignMalloc(frame_buffer_size, 16)
+
+        self._is_windows = platform.system() == "Windows"
 
     def set_size(self, width: int, height: int):
         """Setting the camera resolution"""
@@ -80,7 +84,7 @@ class CameraMVSDK:
             mvsdk.CameraAlignFree(self.pFrameBuffer)
 
         # allocate a new buffer for the current resolution
-        frame_buffer_size = width * height * (1 if self.mono_camera else 3)
+        frame_buffer_size = width * height * self.channels
         self.pFrameBuffer = mvsdk.CameraAlignMalloc(frame_buffer_size, 16)
 
         self.set_camera_exposure(self.EXPOSURE_DEFAULT)
@@ -92,7 +96,7 @@ class CameraMVSDK:
         exposure_time = exposure_ms * 1000
 
         max_fps = 1000 / exposure_ms if exposure_ms > 0 else 30
-        target_fps = min(max_fps, 90)
+        target_fps = min(max_fps, 120)
 
         logger.debug(f"Exposure: {exposure_ms} ms")
         logger.debug(f"Target FPS: {target_fps:.1f}")
@@ -106,22 +110,32 @@ class CameraMVSDK:
 
     def get_frame(self):
         """Getting a single frame from the camera"""
-        pRawData, frame_head = mvsdk.CameraGetImageBuffer(self.hCamera, 1000)
-        mvsdk.CameraImageProcess(
-            self.hCamera, pRawData, self.pFrameBuffer, frame_head)
-        mvsdk.CameraReleaseImageBuffer(self.hCamera, pRawData)
+        try:
+            pRawData, frame_head = mvsdk.CameraGetImageBuffer(
+                self.hCamera, 1000)
+        except mvsdk.CameraException as e:
+            return None
+        try:
+            mvsdk.CameraImageProcess(
+                self.hCamera, pRawData, self.pFrameBuffer, frame_head
+            )
+            if self._is_windows:
+                mvsdk.CameraFlipFrameBuffer(self.pFrameBuffer, frame_head, 1)
 
-        # Converting the buffer to OpenCV
-        if platform.system() == "Windows":
-            mvsdk.CameraFlipFrameBuffer(self.pFrameBuffer, frame_head, 1)
+            frame_data = (mvsdk.c_ubyte *
+                          frame_head.uBytes).from_address(self.pFrameBuffer)
+            frame = np.frombuffer(frame_data, dtype=np.uint8)
+            frame = frame.reshape(
+                (
+                    frame_head.iHeight,
+                    frame_head.iWidth,
+                    1 if frame_head.uiMediaType == mvsdk.CAMERA_MEDIA_TYPE_MONO8 else 3,
+                )
+            )
 
-        frame_data = (mvsdk.c_ubyte *
-                      frame_head.uBytes).from_address(self.pFrameBuffer)
-        frame = np.frombuffer(frame_data, dtype=np.uint8)
-        frame = frame.reshape((frame_head.iHeight, frame_head.iWidth,
-                              1 if frame_head.uiMediaType == mvsdk.CAMERA_MEDIA_TYPE_MONO8 else 3))
-
-        return frame
+            return frame
+        finally:
+            mvsdk.CameraReleaseImageBuffer(self.hCamera, pRawData)
 
     def __del__(self):
         """Closing the camera and freeing up resources"""

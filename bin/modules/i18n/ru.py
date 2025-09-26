@@ -3,7 +3,7 @@
 translations = {
     "camera_picker_label": "Выберите камеру:",
     "camera_connect_error": "Не удалось запустить камеру:",
-    "size_label": "Размер изображения:",
+    "size_label": "Размер матрицы:",
     "exposure_label": "Экспозиция (мс):",
     "blueprint_label": "Чертеж:",
 }

@@ -18,12 +18,20 @@ class LeftSettings(QWidget):
     svg_changed = pyqtSignal(str)
     exposure_changed = pyqtSignal(int)
     camera_changed = pyqtSignal(str)
-    size_changed = pyqtSignal(int)
+    size_changed = pyqtSignal(tuple)
 
     PANEL_WIDTH = 200
-    CAMERA_SIZE_RANGE = (100, 2000)
-    EXPOSURE_RANGE = (5, 60)
+    EXPOSURE_RANGE = (10, 60)
     DEFAULT_EXPOSURE = 30
+    SIZE_OPTIONS = [
+        (4000, 3000),
+        (4000, 2000),
+        (2000, 1500),
+        (2000, 1000),
+        (1000, 750),
+        (800, 600),
+        (640, 480),
+    ]
 
     def __init__(self):
         super().__init__()
@@ -36,7 +44,7 @@ class LeftSettings(QWidget):
         self.main_layout = QVBoxLayout(self)
 
         # self.camera_picker()
-        # self.set_size()
+        self._set_size()
         self._set_exposure()
         self._select_blueprint()
 
@@ -52,9 +60,14 @@ class LeftSettings(QWidget):
     def _set_size(self):
         """pass"""
         label = QPushButton(tr("size_label"))
-        box = QSpinBox()
-        box.setRange(*self.CAMERA_SIZE_RANGE)
-        box.setValue(640)
+        box = QComboBox()
+
+        for size_option in self.SIZE_OPTIONS:
+            box.addItem(f"{size_option[0]}x{size_option[1]}", size_option)
+
+        box.currentIndexChanged.connect(
+            lambda index: self.size_changed.emit(box.itemData(index))
+        )
 
         self.add_to_layout(label, box)
 

@@ -214,6 +214,7 @@ class MainArea(QWidget):
     def svg_size(self, width: float, height: float):
         """in mm"""
         zoomed_cm_pixels = self.cm_in_pixels * self.zoom_level
+
         svg_w = int(zoomed_cm_pixels * width / 10 * 1.05)
         svg_h = int(zoomed_cm_pixels * height / 10 * 1.05)
         self.svg_widget.setFixedSize(svg_w, svg_h)
@@ -222,3 +223,8 @@ class MainArea(QWidget):
         svg_x = (self.video_label.width() - self.svg_widget.width()) // 2
         svg_y = (self.video_label.height() - self.svg_widget.height()) // 2
         self.svg_widget.move(svg_x, svg_y)
+
+    def camera_size(self, width: int, height: int):
+        """pass"""
+        if self.camera_thread is not None:
+            self.camera_thread._set_size(width, height)

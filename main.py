@@ -7,13 +7,16 @@ from PyQt6.QtGui import QIcon
 from qt_material import apply_stylesheet
 from bin.modules.logger_config import setup_logger
 from bin.modules.utils import resource_path
+from bin.modules.i18n import set_language
 from bin.ui.main_window import MainWindow
 
 logger = setup_logger(__name__)
 logger.info("Starting...")
 
-DEBUG = os.getenv('DEBUG', 'true').lower() == 'true'
 PROGRAM_NAME = "Focus View"
+DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
+LANGUAGE = os.getenv('LANGUAGE', 'ru')
+set_language(LANGUAGE)
 
 if __name__ == "__main__":
     if DEBUG:

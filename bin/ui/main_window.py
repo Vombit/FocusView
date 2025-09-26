@@ -48,6 +48,9 @@ class MainWindow(QMainWindow):
         self.left_panel.exposure_changed.connect(
             self.main_area.camera_thread.set_exposure)  # type: ignore
 
+        self.left_panel.size_changed.connect(
+            lambda size: self.main_area.camera_size(*size))
+
     def closeEvent(self, event):  # type: ignore
         """pass"""
         if self.main_area.camera_thread is not None:
