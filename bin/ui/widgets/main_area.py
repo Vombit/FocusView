@@ -215,8 +215,8 @@ class MainArea(QWidget):
         """in mm"""
         zoomed_cm_pixels = self.cm_in_pixels * self.zoom_level
 
-        svg_w = int(zoomed_cm_pixels * width / 10 * 1.05)
-        svg_h = int(zoomed_cm_pixels * height / 10 * 1.05)
+        svg_w = int(zoomed_cm_pixels * width / 10 * 1.01)
+        svg_h = int(zoomed_cm_pixels * height / 10 * 1.01)
         self.svg_widget.setFixedSize(svg_w, svg_h)
 
         # center SVG

@@ -6,9 +6,5 @@ uv run -m nuitka ^
     --include-data-dir=bin=bin ^
     --windows-icon-from-ico=bin/resources/images/logo.ico ^
     --output-file="Focus View.exe" ^
+    --windows-console-mode=disable ^
     ./main.py
-
-
-
-
-@REM --windows-console-mode=disable ^
